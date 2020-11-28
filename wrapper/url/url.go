@@ -9,6 +9,9 @@ import (
 )
 
 // URL set request raw url
+// 建议在client使用URL方法，在Req使用AddPath/Path方法。好处：
+// - 不同运行环境时api的域名不同时，方便根据环境进行切换调用的接口地址
+// - 当api地址发生变化时可以容易的一次性更改api的地址
 func URL(rawURL string) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
 		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
@@ -17,7 +20,7 @@ func URL(rawURL string) goreq.CallWrapper {
 				return err
 			}
 			if req.Request.URL == nil {
-				req.Request.URL = u //new(url.URL)
+				req.Request.URL = u
 			} else {
 				req.Request.URL.Scheme = u.Scheme
 				req.Request.URL.Host = u.Host

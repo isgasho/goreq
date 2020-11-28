@@ -2,6 +2,8 @@ package goreq
 
 import (
 	"bytes"
+	"encoding"
+	"encoding/json"
 	"encoding/xml"
 	"io"
 	"io/ioutil"
@@ -109,7 +111,17 @@ func (r *Resp) AsStruct(v interface{}, unmarshal codec.Unmarshal) error {
 
 // AsJSONStruct convert json response body to struct or map
 func (r *Resp) AsJSONStruct(v interface{}) error {
-	return r.AsStruct(v, r.codec.Unmarshal)
+	data, err := r.AsBytes()
+	if err != nil {
+		return err
+	}
+	switch vv := v.(type) {
+	case json.Unmarshaler:
+		return vv.UnmarshalJSON(data)
+	case encoding.BinaryUnmarshaler:
+		return vv.UnmarshalBinary(data)
+	}
+	return r.codec.Unmarshal(data, v)
 }
 
 // AsXMLStruct convert xml response body to struct or map

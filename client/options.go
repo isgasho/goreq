@@ -22,7 +22,6 @@ type Options struct {
 	TLSClientConfig       *tls.Config
 	Proxy                 func(*http.Request) (*url.URL, error)
 	Codec                 codec.Codec
-	Endpoint              string
 	Errors                []error
 }
 
@@ -94,12 +93,7 @@ func WithCodec(codec codec.Codec) Option {
 	}
 }
 
-func WithEndpoint(endpoint string) Option {
-	return func(options *Options) {
-		options.Endpoint = endpoint
-	}
-}
-
+// TODO
 //func WithPrometheus() Option {
 //	return func(options *Options) {
 //		//http.Handle("/metrics", promhttp.Handler())
