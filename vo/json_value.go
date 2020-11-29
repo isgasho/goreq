@@ -7,13 +7,13 @@ import (
 	"github.com/buger/jsonparser"
 )
 
-// RawMessage is a raw encoded JSON value.
+// JSONValue is a raw encoded JSON value.
 // It implements Marshaler and Unmarshaler and can
 // be used to delay JSON decoding or precompute a JSON encoding.
-type RawMessage []byte
+type JSONValue []byte
 
 // MarshalJSON returns m as the JSON encoding of m.
-func (m RawMessage) MarshalJSON() ([]byte, error) {
+func (m JSONValue) MarshalJSON() ([]byte, error) {
 	if m == nil {
 		return []byte{}, nil
 	}
@@ -21,19 +21,19 @@ func (m RawMessage) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON sets *m to a copy of data.
-func (m *RawMessage) UnmarshalJSON(data []byte) error {
+func (m *JSONValue) UnmarshalJSON(data []byte) error {
 	if m == nil {
-		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
+		return errors.New("json.JSONValue: UnmarshalJSON on nil pointer")
 	}
 	*m = append((*m)[0:0], data...)
 	return nil
 }
 
-func (m RawMessage) GetString(keys ...string) (string, error) {
+func (m JSONValue) GetString(keys ...string) (string, error) {
 	return jsonparser.GetString(m, keys...)
 }
 
-func (m RawMessage) MustString(keys ...string) string {
+func (m JSONValue) MustString(keys ...string) string {
 	v, err := m.GetString(keys...)
 	if err != nil {
 		return ""
@@ -41,7 +41,7 @@ func (m RawMessage) MustString(keys ...string) string {
 	return v
 }
 
-func (m RawMessage) GetInt(keys ...string) (int, error) {
+func (m JSONValue) GetInt(keys ...string) (int, error) {
 	v, err := m.GetInt64(keys...)
 	if err != nil {
 		return 0, err
@@ -49,7 +49,7 @@ func (m RawMessage) GetInt(keys ...string) (int, error) {
 	return int(v), nil
 }
 
-func (m RawMessage) MustInt(keys ...string) int {
+func (m JSONValue) MustInt(keys ...string) int {
 	v, err := m.GetInt(keys...)
 	if err != nil {
 		return 0
@@ -57,11 +57,11 @@ func (m RawMessage) MustInt(keys ...string) int {
 	return v
 }
 
-func (m RawMessage) GetInt64(keys ...string) (int64, error) {
+func (m JSONValue) GetInt64(keys ...string) (int64, error) {
 	return jsonparser.GetInt(m, keys...)
 }
 
-func (m RawMessage) MustInt64(keys ...string) int64 {
+func (m JSONValue) MustInt64(keys ...string) int64 {
 	v, err := m.GetInt64(keys...)
 	if err != nil {
 		return 0
@@ -69,11 +69,11 @@ func (m RawMessage) MustInt64(keys ...string) int64 {
 	return v
 }
 
-func (m RawMessage) GetFloat(keys ...string) (float64, error) {
+func (m JSONValue) GetFloat(keys ...string) (float64, error) {
 	return jsonparser.GetFloat(m, keys...)
 }
 
-func (m RawMessage) MustFloat(keys ...string) float64 {
+func (m JSONValue) MustFloat(keys ...string) float64 {
 	v, err := m.GetFloat(keys...)
 	if err != nil {
 		return 0
@@ -81,11 +81,11 @@ func (m RawMessage) MustFloat(keys ...string) float64 {
 	return v
 }
 
-func (m RawMessage) GetBool(keys ...string) (bool, error) {
+func (m JSONValue) GetBool(keys ...string) (bool, error) {
 	return jsonparser.GetBoolean(m, keys...)
 }
 
-func (m RawMessage) MustBool(keys ...string) bool {
+func (m JSONValue) MustBool(keys ...string) bool {
 	v, err := m.GetBool(keys...)
 	if err != nil {
 		return false
@@ -93,5 +93,5 @@ func (m RawMessage) MustBool(keys ...string) bool {
 	return v
 }
 
-var _ json.Marshaler = (*RawMessage)(nil)
-var _ json.Unmarshaler = (*RawMessage)(nil)
+var _ json.Marshaler = (*JSONValue)(nil)
+var _ json.Unmarshaler = (*JSONValue)(nil)
