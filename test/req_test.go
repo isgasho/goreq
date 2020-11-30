@@ -1,10 +1,20 @@
 package test
 
 import (
+	stdjson "encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
+
+	"github.com/aiscrm/goreq/vo"
+
+	"github.com/aiscrm/goreq/codec"
+	"github.com/aiscrm/goreq/codec/json"
+
+	"github.com/aiscrm/goreq/wrapper/body"
 
 	"github.com/aiscrm/goreq/wrapper/form"
 	"github.com/aiscrm/goreq/wrapper/multipart"
@@ -57,6 +67,82 @@ func TestReq_AddQueryParams(t *testing.T) {
 	}
 	if data != "ThisIsTitle" {
 		t.Errorf("want %s, but %s", "ThisIsTitle", data)
+	}
+}
+
+func TestBody(t *testing.T) {
+	getHandler := func(w http.ResponseWriter, r *http.Request) {
+		data, _ := ioutil.ReadAll(r.Body)
+		w.Write(data)
+	}
+	ts := httptest.NewServer(http.HandlerFunc(getHandler))
+
+	type Scene struct {
+		SceneID string `json:"scene_id"`
+	}
+
+	type ActionInfo struct {
+		Scene Scene `json:"scene"`
+	}
+
+	type QrCodeRequest struct {
+		ActionName string     `json:"action_name"`
+		ActionInfo ActionInfo `json:"action_info"`
+	}
+	qrCodeRequest := QrCodeRequest{
+		ActionName: "QR_LIMIT_SCENE",
+		ActionInfo: ActionInfo{
+			Scene: Scene{SceneID: "id=1&name=corel"},
+		},
+	}
+	qrCodeResponse := QrCodeRequest{}
+	err := goreq.NewClient().Use(log.Dump()).Post(ts.URL).
+		Use(
+			body.JSONWithCodec(qrCodeRequest, json.NewCodec(codec.DisableEscapeHTML())),
+		).Do().AsJSONStruct(&qrCodeResponse)
+	if err != nil {
+		t.Error(err)
+	}
+	if qrCodeResponse.ActionInfo.Scene.SceneID != qrCodeRequest.ActionInfo.Scene.SceneID {
+		t.Errorf("want %s, but %s", qrCodeRequest.ActionInfo.Scene.SceneID, qrCodeResponse.ActionInfo.Scene.SceneID)
+	}
+}
+
+func TestJSONValue(t *testing.T) {
+	name := "你好"
+	age := 23
+	getHandler := func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		rname := r.Form.Get("name")
+		rage, _ := strconv.Atoi(r.Form.Get("age"))
+		type Person struct {
+			Name string `json:"name"`
+			Age  int    `json:"age"`
+		}
+		p := Person{
+			Name: rname,
+			Age:  rage,
+		}
+		data, _ := stdjson.Marshal(p)
+		w.Write(data)
+	}
+	ts := httptest.NewServer(http.HandlerFunc(getHandler))
+
+	v := vo.JSONValue{}
+	err := goreq.NewClient().Use(log.Dump()).Post(ts.URL).
+		Use(
+			query.Set("name", name),
+			query.Set("age", age),
+		).
+		Do().AsJSONStruct(&v)
+	if err != nil {
+		t.Error(err)
+	}
+	if v.MustString("name") != name {
+		t.Errorf("want %s, but %s", name, v.MustString("name"))
+	}
+	if v.MustInt("age") != age {
+		t.Errorf("want %d, but %d", age, v.MustInt("age"))
 	}
 }
 

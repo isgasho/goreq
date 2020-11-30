@@ -7,6 +7,8 @@ import (
 	"encoding/xml"
 	"io"
 
+	"github.com/aiscrm/goreq/codec"
+
 	"github.com/aiscrm/goreq/util"
 
 	"github.com/aiscrm/goreq"
@@ -19,7 +21,21 @@ func JSON(body interface{}) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
 		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
 			req.Request.Header.Set(util.HeaderContentType, util.HeaderContentTypeJSON)
-			data, err := json.Marshal(body)
+			data, err := opts.Codec.Marshal(body)
+			if err != nil {
+				return err
+			}
+			return Binary(data)(next)(req, resp, opts)
+		}
+	}
+}
+
+// JSONWithCodec convert body to json data with custom codec
+func JSONWithCodec(body interface{}, c codec.Codec) goreq.CallWrapper {
+	return func(next goreq.CallFunc) goreq.CallFunc {
+		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+			req.Request.Header.Set(util.HeaderContentType, util.HeaderContentTypeJSON)
+			data, err := c.Marshal(body)
 			if err != nil {
 				return err
 			}
