@@ -8,4 +8,4 @@ require (
 	github.com/json-iterator/go v1.1.10
 )
 
-replace github.com/aiscrm/goreq => /usr/local/work/data/gitroot/open/aiscrm/goreq
+replace github.com/aiscrm/goreq => ../../

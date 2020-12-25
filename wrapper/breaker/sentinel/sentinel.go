@@ -16,10 +16,10 @@ func Breaker(entryOpts ...sentinel.EntryOption) goreq.CallWrapper {
 				// block 后不需要进行 Exit()
 				return b
 			} else {
+				// 务必保证业务逻辑结束后 Exit
+				defer e.Exit()
 				// 请求可以通过，在此处编写您的业务逻辑
 				next(req, resp, opts)
-				// 务必保证业务逻辑结束后 Exit
-				e.Exit()
 			}
 			return nil
 		}
