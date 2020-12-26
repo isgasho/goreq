@@ -8,19 +8,19 @@ import (
 
 func Context(ctx context.Context) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			req.Request.WithContext(ctx)
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }
 
 func Value(key, val interface{}) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			ctx := context.WithValue(req.Request.Context(), key, val)
 			req.Request.WithContext(ctx)
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }

@@ -9,7 +9,7 @@ import (
 
 func Breaker(entryOpts ...sentinel.EntryOption) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			e, b := sentinel.Entry(defaultKey(req.Request), entryOpts...)
 			if b != nil {
 				// 请求被流控，可以从 BlockError 中获取限流详情
@@ -19,7 +19,7 @@ func Breaker(entryOpts ...sentinel.EntryOption) goreq.CallWrapper {
 				// 务必保证业务逻辑结束后 Exit
 				defer e.Exit()
 				// 请求可以通过，在此处编写您的业务逻辑
-				next(req, resp, opts)
+				next(req, resp)
 			}
 			return nil
 		}

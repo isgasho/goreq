@@ -19,13 +19,13 @@ type Marshal func(interface{}) ([]byte, error)
 // JSON convert body to json data
 func JSON(body interface{}) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			req.Request.Header.Set(util.HeaderContentType, util.HeaderContentTypeJSON)
-			data, err := opts.Codec.Marshal(body)
+			data, err := json.Marshal(body)
 			if err != nil {
 				return err
 			}
-			return Binary(data)(next)(req, resp, opts)
+			return Binary(data)(next)(req, resp)
 		}
 	}
 }
@@ -33,13 +33,13 @@ func JSON(body interface{}) goreq.CallWrapper {
 // JSONWithCodec convert body to json data with custom codec
 func JSONWithCodec(body interface{}, c codec.Codec) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			req.Request.Header.Set(util.HeaderContentType, util.HeaderContentTypeJSON)
 			data, err := c.Marshal(body)
 			if err != nil {
 				return err
 			}
-			return Binary(data)(next)(req, resp, opts)
+			return Binary(data)(next)(req, resp)
 		}
 	}
 }
@@ -47,13 +47,13 @@ func JSONWithCodec(body interface{}, c codec.Codec) goreq.CallWrapper {
 // XML convert body to xml data
 func XML(body interface{}) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			req.Request.Header.Set(util.HeaderContentType, util.HeaderContentTypeXML)
 			data, err := xml.Marshal(body)
 			if err != nil {
 				return err
 			}
-			return Binary(data)(next)(req, resp, opts)
+			return Binary(data)(next)(req, resp)
 		}
 	}
 }
@@ -61,7 +61,7 @@ func XML(body interface{}) goreq.CallWrapper {
 // Body with body
 func Body(body interface{}) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			var data []byte
 			var err error
 			switch b := body.(type) {
@@ -93,15 +93,13 @@ func Body(body interface{}) goreq.CallWrapper {
 			case func() ([]byte, error):
 				data, err = b()
 			default:
-				if opts.Codec == nil {
-					return goreq.ErrNotSupportedBody
-				}
-				data, err = opts.Codec.Marshal(body)
+				// or return error
+				data, err = json.Marshal(body)
 			}
 			if err != nil {
 				return err
 			}
-			return Binary(data)(next)(req, resp, opts)
+			return Binary(data)(next)(req, resp)
 		}
 	}
 }
@@ -113,11 +111,11 @@ func Binary(body []byte) goreq.CallWrapper {
 
 func Reader(body io.Reader) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			if err := util.SetBinary(req.Request, body); err != nil {
 				return err
 			}
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }

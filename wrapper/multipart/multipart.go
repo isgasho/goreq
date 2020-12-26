@@ -13,9 +13,9 @@ import (
 // File upload file with custom field name and file name
 func File(fieldName, fileName string, file io.ReadCloser) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			util.AddMultipartFile(req.Request, fieldName, fileName, file)
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }
@@ -23,12 +23,12 @@ func File(fieldName, fileName string, file io.ReadCloser) goreq.CallWrapper {
 // FileBytes upload file with custom field name and file name
 func FileBytes(fieldName, fileName string, data []byte) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			if len(data) == 0 {
-				return next(req, resp, opts)
+				return next(req, resp)
 			}
 			util.AddMultipartFile(req.Request, fieldName, fileName, ioutil.NopCloser(bytes.NewReader(data)))
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }

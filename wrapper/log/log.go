@@ -8,8 +8,8 @@ import (
 
 func Dump() goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
-			next(req, resp, opts)
+		return func(req *goreq.Req, resp *goreq.Resp) error {
+			next(req, resp)
 			fmt.Println(resp.Dump())
 			return nil
 		}

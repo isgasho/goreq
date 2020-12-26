@@ -11,9 +11,9 @@ import (
 // That means all cookies, if any, are written into the same line, separated by semicolon.
 func Add(cookie *http.Cookie) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			req.Request.AddCookie(cookie)
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }
@@ -21,9 +21,9 @@ func Add(cookie *http.Cookie) goreq.CallWrapper {
 // DelAll deletes all the cookies by deleting the Cookie header field.
 func DelAll() goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			req.Request.Header.Del("Cookie")
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }

@@ -15,7 +15,6 @@ import (
 	"github.com/aiscrm/goreq/util"
 
 	"github.com/aiscrm/goreq/client"
-	"github.com/aiscrm/goreq/codec/json"
 )
 
 var (
@@ -49,7 +48,6 @@ func NewClient(opts ...client.Option) Client {
 		Transport:             nil,
 		TLSClientConfig:       nil,
 		Proxy:                 nil,
-		Codec:                 json.NewCodec(),
 		Errors:                []error{},
 	}
 	c := &cli{
@@ -103,9 +101,7 @@ func (c *cli) Do(r *Req, opts ...client.Option) *Resp {
 	if len(c.wrappers) > 0 {
 		chain = chain.Append(c.wrappers...)
 	}
-	err := chain.Then(c.do)(r, resp, CallOptions{
-		Codec: c.opts.Codec,
-	})
+	err := chain.Then(c.do)(r, resp)
 	if err != nil {
 		resp.Error = err
 	}
@@ -124,7 +120,7 @@ func (c *cli) Post(rawURL string) *Req {
 	return Post(rawURL).WithClient(c)
 }
 
-func (c *cli) do(req *Req, resp *Resp, opts CallOptions) error {
+func (c *cli) do(req *Req, resp *Resp) error {
 	if req.Error != nil {
 		return req.Error
 	}
@@ -132,7 +128,6 @@ func (c *cli) do(req *Req, resp *Resp, opts CallOptions) error {
 	before := time.Now()
 	reqBody := req.GetBody()
 	resp.Response, resp.Error = c.httpClient.Do(req.Request)
-	resp.codec = c.opts.Codec
 	resp.Cost = time.Now().Sub(before)
 
 	if resp.Error != nil && strings.Contains(resp.Error.Error(), "Client.Timeout exceeded") { // 超时的判断

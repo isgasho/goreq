@@ -14,7 +14,7 @@ import (
 // - 当api地址发生变化时可以容易的一次性更改api的地址
 func URL(rawURL string) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			u, err := url.Parse(rawURL)
 			if err != nil {
 				return err
@@ -29,7 +29,7 @@ func URL(rawURL string) goreq.CallWrapper {
 					req.Request.URL.Path = u.Path + req.Request.URL.Path
 				}
 			}
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }
@@ -37,12 +37,12 @@ func URL(rawURL string) goreq.CallWrapper {
 // Path set request raw url
 func Path(path string) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			if req.Request.URL == nil {
 				req.Request.URL = new(url.URL)
 			}
 			req.Request.URL.Path = util.NormalizePath(path)
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }
@@ -50,12 +50,12 @@ func Path(path string) goreq.CallWrapper {
 // AddPath add Request path
 func AddPath(path string) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			if req.Request.URL == nil {
 				req.Request.URL = new(url.URL)
 			}
 			req.Request.URL.Path += util.NormalizePath(path)
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }

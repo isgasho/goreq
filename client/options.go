@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/aiscrm/goreq/codec"
 )
 
 type Options struct {
@@ -21,7 +19,6 @@ type Options struct {
 	Transport             http.RoundTripper
 	TLSClientConfig       *tls.Config
 	Proxy                 func(*http.Request) (*url.URL, error)
-	Codec                 codec.Codec
 	Errors                []error
 }
 
@@ -84,12 +81,6 @@ func WithProxyURL(proxyURL string) Option {
 			return
 		}
 		options.Proxy = http.ProxyURL(u)
-	}
-}
-
-func WithCodec(codec codec.Codec) Option {
-	return func(options *Options) {
-		options.Codec = codec
 	}
 }
 

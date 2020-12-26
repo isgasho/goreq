@@ -13,10 +13,10 @@ import (
 // It replaces any existing values.
 func Set(key string, value interface{}) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			req.Request.PostForm.Set(key, util.ToString(value))
 			generate(req)
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }
@@ -25,10 +25,10 @@ func Set(key string, value interface{}) goreq.CallWrapper {
 // It replaces any existing values.
 func Add(key string, value interface{}) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			req.Request.PostForm.Add(key, util.ToString(value))
 			generate(req)
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }
@@ -36,12 +36,12 @@ func Add(key string, value interface{}) goreq.CallWrapper {
 // SetMap sets a map of query params by key-value pair.
 func SetMap(params map[string]interface{}) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			for key, value := range params {
 				req.Request.PostForm.Set(key, util.ToString(value))
 				generate(req)
 			}
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }
@@ -49,12 +49,12 @@ func SetMap(params map[string]interface{}) goreq.CallWrapper {
 // AddMap adds a map of query params by key-value pair.
 func AddMap(params map[string]interface{}) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp, opts goreq.CallOptions) error {
+		return func(req *goreq.Req, resp *goreq.Resp) error {
 			for key, value := range params {
 				req.Request.PostForm.Add(key, util.ToString(value))
 				generate(req)
 			}
-			return next(req, resp, opts)
+			return next(req, resp)
 		}
 	}
 }

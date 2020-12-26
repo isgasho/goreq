@@ -25,7 +25,6 @@ type Resp struct {
 	Error    error
 	Cost     time.Duration
 	Timeout  bool
-	codec    codec.Codec
 }
 
 // StatusCode returns status code
@@ -121,7 +120,7 @@ func (r *Resp) AsJSONStruct(v interface{}) error {
 	case encoding.BinaryUnmarshaler:
 		return vv.UnmarshalBinary(data)
 	}
-	return r.codec.Unmarshal(data, v)
+	return json.Unmarshal(data, v)
 }
 
 // AsXMLStruct convert xml response body to struct or map

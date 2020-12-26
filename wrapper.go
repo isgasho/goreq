@@ -1,16 +1,8 @@
 package goreq
 
-import "github.com/aiscrm/goreq/codec"
-
 // https://github.com/justinas/alice/blob/master/chain.go
 
-type CallOptions struct {
-	Codec codec.Codec
-}
-
-type CallOption func(options *CallOptions)
-
-type CallFunc func(*Req, *Resp, CallOptions) error
+type CallFunc func(*Req, *Resp) error
 
 // A constructor for a piece of middleware.
 // Some middleware use this constructor out of the box,
