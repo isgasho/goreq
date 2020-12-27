@@ -14,8 +14,6 @@ import (
 	"github.com/aiscrm/goreq"
 )
 
-type Marshal func(interface{}) ([]byte, error)
-
 // JSON convert body to json data
 func JSON(body interface{}) goreq.CallWrapper {
 	return func(next goreq.CallFunc) goreq.CallFunc {
