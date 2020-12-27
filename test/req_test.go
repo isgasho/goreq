@@ -2,17 +2,22 @@ package test
 
 import (
 	stdjson "encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+	"time"
 
-	"github.com/aiscrm/goreq/vo"
+	"github.com/aiscrm/goreq/wrapper/breaker"
+
+	"github.com/aiscrm/goreq/wrapper/breaker/hystrix"
 
 	"github.com/aiscrm/goreq/codec"
 	"github.com/aiscrm/goreq/codec/json"
+	"github.com/aiscrm/goreq/vo"
 
 	"github.com/aiscrm/goreq/wrapper/body"
 
@@ -143,6 +148,44 @@ func TestJSONValue(t *testing.T) {
 	}
 	if v.MustInt("age") != age {
 		t.Errorf("want %d, but %d", age, v.MustInt("age"))
+	}
+}
+
+func TestBreaker(t *testing.T) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		sleep := r.URL.Query().Get("sleep")
+		sleepMs, _ := strconv.Atoi(sleep)
+		time.Sleep(time.Duration(sleepMs) * time.Millisecond)
+		w.Write([]byte(sleep))
+	}
+	ts := httptest.NewServer(http.HandlerFunc(handler))
+
+	sleep := 2000
+	client := goreq.NewClient().Use(hystrix.Breaker(hystrix.DefaultTimeout(3000)))
+	resp := client.New().WithMethod(http.MethodPost).
+		Use(
+			url.URL(ts.URL),
+			query.AddMap(map[string]interface{}{
+				"sleep": sleep,
+			}),
+		).Do()
+	if resp.Error != nil {
+		t.Errorf("breaker want to be closed, but is open: %v", resp.Error)
+	}
+
+	sleep = 8000
+	resp2 := client.New().WithMethod(http.MethodPost).
+		Use(
+			url.URL(ts.URL),
+			query.AddMap(map[string]interface{}{
+				"sleep": sleep,
+			}),
+		).Do()
+	if resp2.Error == nil {
+		t.Errorf("breaker want to be open, but is closed")
+	}
+	if errors.Is(resp2.Error, breaker.CircuitError{}) {
+		t.Errorf("is not CircuitError: %v", resp2.Error)
 	}
 }
 

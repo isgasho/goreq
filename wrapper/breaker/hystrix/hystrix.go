@@ -22,16 +22,16 @@ func Breaker(opts ...Option) goreq.CallWrapper {
 
 	return func(next goreq.CallFunc) goreq.CallFunc {
 		return func(req *goreq.Req, resp *goreq.Resp) error {
-			var doError error
+			var circuitError error
 			hystrix.Do(options.KeyFunc(req.Request), func() error {
 				return next(req, resp)
 			}, func(err error) error {
-				doError = breaker.CircuitError{
+				circuitError = breaker.CircuitError{
 					Message: err.Error(),
 				}
 				return nil
 			})
-			return doError
+			return circuitError
 		}
 	}
 }
