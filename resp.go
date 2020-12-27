@@ -13,8 +13,6 @@ import (
 	"time"
 
 	"github.com/aiscrm/goreq/util"
-
-	"github.com/aiscrm/goreq/codec"
 )
 
 // Resp represents a http response
@@ -100,7 +98,7 @@ func (r *Resp) AsString() (string, error) {
 }
 
 // AsStruct convert to struct. default to use json format
-func (r *Resp) AsStruct(v interface{}, unmarshal codec.Unmarshal) error {
+func (r *Resp) AsStruct(v interface{}, unmarshal func([]byte, interface{}) error) error {
 	data, err := r.AsBytes()
 	if err != nil {
 		return err
