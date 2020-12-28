@@ -6,15 +6,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"github.com/aiscrm/goreq/wrapper"
 )
 
 // Req represents a http request
 type Req struct {
-	Request  *http.Request
-	Error    error
-	client   Client
-	body     []byte
-	wrappers []CallWrapper
+	Request *http.Request
+	Error   error
+	client  Client
+	//body     []byte
+	wrappers []wrapper.CallWrapper
 }
 
 // New return a empty request
@@ -38,12 +40,11 @@ func (r *Req) Clone() *Req {
 	clone := new(Req)
 	clone.client = r.client
 	clone.Request = r.Request.Clone(r.Request.Context())
-	clone.body = []byte{}
 	clone.Error = r.Error
 	return clone
 }
 
-func (r *Req) Use(wrappers ...CallWrapper) *Req {
+func (r *Req) Use(wrappers ...wrapper.CallWrapper) *Req {
 	r.wrappers = append(r.wrappers, wrappers...)
 	return r
 }

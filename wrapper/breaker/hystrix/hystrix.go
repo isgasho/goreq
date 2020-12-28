@@ -3,13 +3,14 @@ package hystrix
 import (
 	"net/http"
 
-	"github.com/aiscrm/goreq"
+	"github.com/aiscrm/goreq/wrapper"
+
 	"github.com/aiscrm/goreq/wrapper/breaker"
 
 	"github.com/afex/hystrix-go/hystrix"
 )
 
-func Breaker(opts ...Option) goreq.CallWrapper {
+func Breaker(opts ...Option) wrapper.CallWrapper {
 	options := Options{
 		KeyFunc: func(request *http.Request) string {
 			return request.RequestURI
@@ -20,11 +21,11 @@ func Breaker(opts ...Option) goreq.CallWrapper {
 		opt(&options)
 	}
 
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
 			var circuitError error
-			hystrix.Do(options.KeyFunc(req.Request), func() error {
-				return next(req, resp)
+			hystrix.Do(options.KeyFunc(request), func() error {
+				return next(response, request)
 			}, func(err error) error {
 				circuitError = breaker.CircuitError{
 					Message: err.Error(),

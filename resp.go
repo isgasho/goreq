@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"os"
 	"time"
 
@@ -159,18 +158,4 @@ func (r *Resp) AsFile(dest string) error {
 	// defer r.response.Body.Close()
 	// _, Error = io.Copy(file, r.response.Body)
 	// return Error
-}
-
-func (r *Resp) Dump() string {
-	buf := &bytes.Buffer{}
-	if r.Request != nil {
-		reqData, _ := httputil.DumpRequest(r.Request, true)
-		buf.Write(reqData)
-	}
-	buf.WriteString("\n\n========================================\n")
-	if r.Response != nil {
-		respData, _ := httputil.DumpResponse(r.Response, true)
-		buf.Write(respData)
-	}
-	return string(buf.Bytes())
 }

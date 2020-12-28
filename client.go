@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aiscrm/goreq/wrapper"
+
 	"github.com/aiscrm/goreq/util"
 
 	"github.com/aiscrm/goreq/client"
@@ -27,7 +29,7 @@ var (
 type Client interface {
 	Init(...client.Option) error
 	Options() client.Options
-	Use(...CallWrapper) Client
+	Use(...wrapper.CallWrapper) Client
 	Do(*Req, ...client.Option) *Resp
 	New() *Req
 	Get(rawURL string) *Req
@@ -61,7 +63,7 @@ func NewClient(opts ...client.Option) Client {
 type cli struct {
 	opts       client.Options
 	httpClient *http.Client
-	wrappers   []CallWrapper
+	wrappers   []wrapper.CallWrapper
 	//handler    CallFunc
 	pool sync.Pool
 }
@@ -79,7 +81,7 @@ func (c *cli) Options() client.Options {
 	return c.opts
 }
 
-func (c *cli) Use(wrappers ...CallWrapper) Client {
+func (c *cli) Use(wrappers ...wrapper.CallWrapper) Client {
 	c.wrappers = append(c.wrappers, wrappers...)
 	return c
 	//nc := &client{
@@ -92,18 +94,39 @@ func (c *cli) Use(wrappers ...CallWrapper) Client {
 	//return nc
 }
 
-func (c *cli) Do(r *Req, opts ...client.Option) *Resp {
+func (c *cli) Do(req *Req, opts ...client.Option) *Resp {
 	for _, o := range opts {
 		o(&c.opts)
 	}
 	resp := new(Resp)
-	chain := newChain(r.wrappers...)
+	resp.Response = new(http.Response)
+	chain := wrapper.New(req.wrappers...)
 	if len(c.wrappers) > 0 {
 		chain = chain.Append(c.wrappers...)
 	}
-	err := chain.Then(c.do)(r, resp)
+	before := time.Now()
+	err := chain.Then(c.do)(resp.Response, req.Request)
+	resp.Cost = time.Now().Sub(before)
+	resp.Request = req.Request
 	if err != nil {
 		resp.Error = err
+		if strings.Contains(resp.Error.Error(), "Client.Timeout exceeded") { // 超时的判断
+			resp.Timeout = true
+		}
+		return resp
+	}
+
+	if resp.Response.Header.Get(util.HeaderContentEncoding) == util.HeaderContentEncodingGzip {
+		body, err := gzip.NewReader(resp.Response.Body)
+		if err == nil {
+			resp.Response.Body = body
+		}
+	}
+	if resp.Response.Header.Get(util.HeaderContentEncoding) == util.HeaderContentEncodingDeflate {
+		body, err := zlib.NewReader(resp.Response.Body)
+		if err == nil {
+			resp.Response.Body = body
+		}
 	}
 	return resp
 }
@@ -120,38 +143,23 @@ func (c *cli) Post(rawURL string) *Req {
 	return Post(rawURL).WithClient(c)
 }
 
-func (c *cli) do(req *Req, resp *Resp) error {
-	if req.Error != nil {
-		return req.Error
-	}
-
-	before := time.Now()
-	reqBody := req.GetBody()
-	resp.Response, resp.Error = c.httpClient.Do(req.Request)
-	resp.Cost = time.Now().Sub(before)
-
-	if resp.Error != nil && strings.Contains(resp.Error.Error(), "Client.Timeout exceeded") { // 超时的判断
-		resp.Timeout = true
-	}
-	if resp.Error == nil {
-		if resp.Response.Header.Get(util.HeaderContentEncoding) == util.HeaderContentEncodingGzip {
-			body, err := gzip.NewReader(resp.Response.Body)
-			if err == nil {
-				resp.Response.Body = body
-			}
-		}
-		if resp.Response.Header.Get(util.HeaderContentEncoding) == util.HeaderContentEncodingDeflate {
-			body, err := zlib.NewReader(resp.Response.Body)
-			if err == nil {
-				resp.Response.Body = body
-			}
+func (c *cli) do(response *http.Response, request *http.Request) error {
+	var err error
+	var reqBody []byte
+	if request.Body != nil {
+		reqBody, err = ioutil.ReadAll(request.Body)
+		if err == nil {
+			request.Body = ioutil.NopCloser(bytes.NewReader(reqBody))
 		}
 	}
-
-	// for dump
-	req.Request.Body = ioutil.NopCloser(bytes.NewReader(reqBody))
-	resp.Request = req.Request
-
+	res, err := c.httpClient.Do(request)
+	if err != nil {
+		return err
+	}
+	if len(reqBody) > 0 {
+		request.Body = ioutil.NopCloser(bytes.NewReader(reqBody))
+	}
+	*response = *res
 	return nil
 }
 

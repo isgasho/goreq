@@ -101,16 +101,21 @@ func TestBody(t *testing.T) {
 		},
 	}
 	qrCodeResponse := QrCodeRequest{}
-	err := goreq.NewClient().Use(log.Dump()).Post(ts.URL).
+	resp := goreq.NewClient().Use(log.Dump()).Post(ts.URL).
 		Use(
 			body.JSONWithCodec(qrCodeRequest, json.NewCodec(codec.DisableEscapeHTML())),
-		).Do().AsJSONStruct(&qrCodeResponse)
-	if err != nil {
-		t.Error(err)
+		).Do()
+
+	if resp.Error != nil {
+		t.Error(resp.Error)
+	}
+	if err := resp.AsJSONStruct(&qrCodeResponse); err != nil {
+		t.Error(resp.Error)
 	}
 	if qrCodeResponse.ActionInfo.Scene.SceneID != qrCodeRequest.ActionInfo.Scene.SceneID {
 		t.Errorf("want %s, but %s", qrCodeRequest.ActionInfo.Scene.SceneID, qrCodeResponse.ActionInfo.Scene.SceneID)
 	}
+	//fmt.Println(resp.Dump())
 }
 
 func TestJSONValue(t *testing.T) {

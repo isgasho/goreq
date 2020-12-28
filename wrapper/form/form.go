@@ -3,75 +3,77 @@ package form
 import (
 	"bytes"
 	"mime/multipart"
+	"net/http"
 	"strings"
 
-	"github.com/aiscrm/goreq"
+	"github.com/aiscrm/goreq/wrapper"
+
 	"github.com/aiscrm/goreq/util"
 )
 
 // Set sets the query param key and value.
 // It replaces any existing values.
-func Set(key string, value interface{}) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.PostForm.Set(key, util.ToString(value))
-			generate(req)
-			return next(req, resp)
+func Set(key string, value interface{}) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.PostForm.Set(key, util.ToString(value))
+			generate(request)
+			return next(response, request)
 		}
 	}
 }
 
 // Add adds the query param key and value.
 // It replaces any existing values.
-func Add(key string, value interface{}) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.PostForm.Add(key, util.ToString(value))
-			generate(req)
-			return next(req, resp)
+func Add(key string, value interface{}) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.PostForm.Add(key, util.ToString(value))
+			generate(request)
+			return next(response, request)
 		}
 	}
 }
 
 // SetMap sets a map of query params by key-value pair.
-func SetMap(params map[string]interface{}) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
+func SetMap(params map[string]interface{}) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
 			for key, value := range params {
-				req.Request.PostForm.Set(key, util.ToString(value))
-				generate(req)
+				request.PostForm.Set(key, util.ToString(value))
+				generate(request)
 			}
-			return next(req, resp)
+			return next(response, request)
 		}
 	}
 }
 
 // AddMap adds a map of query params by key-value pair.
-func AddMap(params map[string]interface{}) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
+func AddMap(params map[string]interface{}) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
 			for key, value := range params {
-				req.Request.PostForm.Add(key, util.ToString(value))
-				generate(req)
+				request.PostForm.Add(key, util.ToString(value))
+				generate(request)
 			}
-			return next(req, resp)
+			return next(response, request)
 		}
 	}
 }
 
-func generate(req *goreq.Req) error {
-	if strings.Contains(req.Request.Header.Get(util.HeaderContentType), util.HeaderContentTypeMultipart) {
+func generate(request *http.Request) error {
+	if strings.Contains(request.Header.Get(util.HeaderContentType), util.HeaderContentTypeMultipart) {
 		data := new(bytes.Buffer)
 		bodyWriter := multipart.NewWriter(data)
 
-		if err := util.ToMultipart(req.Request, bodyWriter); err != nil {
+		if err := util.ToMultipart(request, bodyWriter); err != nil {
 			return err
 		}
 
 		_ = bodyWriter.Close()
-		return util.SetBinary(req.Request, bytes.NewReader(data.Bytes()))
+		return util.SetBinary(request, bytes.NewReader(data.Bytes()))
 	} else {
-		req.Request.Header.Set(util.HeaderContentType, util.HeaderContentTypeForm)
-		return util.SetBinary(req.Request, bytes.NewReader([]byte(req.Request.PostForm.Encode())))
+		request.Header.Set(util.HeaderContentType, util.HeaderContentTypeForm)
+		return util.SetBinary(request, bytes.NewReader([]byte(request.PostForm.Encode())))
 	}
 }

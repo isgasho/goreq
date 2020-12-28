@@ -6,60 +6,61 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"io"
+	"net/http"
+
+	"github.com/aiscrm/goreq/wrapper"
 
 	"github.com/aiscrm/goreq/codec"
 
 	"github.com/aiscrm/goreq/util"
-
-	"github.com/aiscrm/goreq"
 )
 
 // JSON convert body to json data
-func JSON(body interface{}) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Set(util.HeaderContentType, util.HeaderContentTypeJSON)
+func JSON(body interface{}) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Set(util.HeaderContentType, util.HeaderContentTypeJSON)
 			data, err := json.Marshal(body)
 			if err != nil {
 				return err
 			}
-			return Binary(data)(next)(req, resp)
+			return Binary(data)(next)(response, request)
 		}
 	}
 }
 
 // JSONWithCodec convert body to json data with custom codec
-func JSONWithCodec(body interface{}, c codec.Codec) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Set(util.HeaderContentType, util.HeaderContentTypeJSON)
+func JSONWithCodec(body interface{}, c codec.Codec) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Set(util.HeaderContentType, util.HeaderContentTypeJSON)
 			data, err := c.Marshal(body)
 			if err != nil {
 				return err
 			}
-			return Binary(data)(next)(req, resp)
+			return Binary(data)(next)(response, request)
 		}
 	}
 }
 
 // XML convert body to xml data
-func XML(body interface{}) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Set(util.HeaderContentType, util.HeaderContentTypeXML)
+func XML(body interface{}) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Set(util.HeaderContentType, util.HeaderContentTypeXML)
 			data, err := xml.Marshal(body)
 			if err != nil {
 				return err
 			}
-			return Binary(data)(next)(req, resp)
+			return Binary(data)(next)(response, request)
 		}
 	}
 }
 
 // Body with body
-func Body(body interface{}) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
+func Body(body interface{}) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
 			var data []byte
 			var err error
 			switch b := body.(type) {
@@ -97,23 +98,23 @@ func Body(body interface{}) goreq.CallWrapper {
 			if err != nil {
 				return err
 			}
-			return Binary(data)(next)(req, resp)
+			return Binary(data)(next)(response, request)
 		}
 	}
 }
 
 // Body with body
-func Binary(body []byte) goreq.CallWrapper {
+func Binary(body []byte) wrapper.CallWrapper {
 	return Reader(bytes.NewReader(body))
 }
 
-func Reader(body io.Reader) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			if err := util.SetBinary(req.Request, body); err != nil {
+func Reader(body io.Reader) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			if err := util.SetBinary(request, body); err != nil {
 				return err
 			}
-			return next(req, resp)
+			return next(response, request)
 		}
 	}
 }

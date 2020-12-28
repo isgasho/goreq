@@ -4,31 +4,32 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"net/http"
+
+	"github.com/aiscrm/goreq/wrapper"
 
 	"github.com/aiscrm/goreq/util"
-
-	"github.com/aiscrm/goreq"
 )
 
 // File upload file with custom field name and file name
-func File(fieldName, fileName string, file io.ReadCloser) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			util.AddMultipartFile(req.Request, fieldName, fileName, file)
-			return next(req, resp)
+func File(fieldName, fileName string, file io.ReadCloser) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			util.AddMultipartFile(request, fieldName, fileName, file)
+			return next(response, request)
 		}
 	}
 }
 
 // FileBytes upload file with custom field name and file name
-func FileBytes(fieldName, fileName string, data []byte) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
+func FileBytes(fieldName, fileName string, data []byte) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
 			if len(data) == 0 {
-				return next(req, resp)
+				return next(response, request)
 			}
-			util.AddMultipartFile(req.Request, fieldName, fileName, ioutil.NopCloser(bytes.NewReader(data)))
-			return next(req, resp)
+			util.AddMultipartFile(request, fieldName, fileName, ioutil.NopCloser(bytes.NewReader(data)))
+			return next(response, request)
 		}
 	}
 }

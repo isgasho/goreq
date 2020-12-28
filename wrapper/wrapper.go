@@ -1,8 +1,10 @@
-package goreq
+package wrapper
+
+import "net/http"
 
 // https://github.com/justinas/alice/blob/master/chain.go
 
-type CallFunc func(*Req, *Resp) error
+type CallFunc func(*http.Response, *http.Request) error
 
 // A constructor for a piece of middleware.
 // Some middleware use this constructor out of the box,
@@ -21,7 +23,7 @@ type Chain struct {
 // memorizing the given list of middleware middlewares.
 // New serves no other function,
 // middlewares are only called upon a call to Then().
-func newChain(wrappers ...CallWrapper) Chain {
+func New(wrappers ...CallWrapper) Chain {
 	return Chain{append(([]CallWrapper)(nil), wrappers...)}
 }
 

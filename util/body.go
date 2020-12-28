@@ -69,7 +69,7 @@ func ToMultipart(req *http.Request, bodyWriter *multipart.Writer) error {
 	req.PostForm = make(url.Values)
 	req.ParseMultipartForm(defaultMaxMemory)
 	if req.MultipartForm != nil {
-		//for key, value := range req.Request.MultipartForm.Value {
+		//for key, value := range request.MultipartForm.Value {
 		//	for _, val := range value {
 		//		_ = bodyWriter.WriteField(key, ToString(val))
 		//	}

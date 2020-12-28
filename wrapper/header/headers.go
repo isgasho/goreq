@@ -3,106 +3,106 @@ package header
 import (
 	"net/http"
 
-	"github.com/aiscrm/goreq/util"
+	"github.com/aiscrm/goreq/wrapper"
 
-	"github.com/aiscrm/goreq"
+	"github.com/aiscrm/goreq/util"
 )
 
-func ContentType(value string) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Set(util.HeaderContentType, value)
-			return next(req, resp)
+func ContentType(value string) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Set(util.HeaderContentType, value)
+			return next(response, request)
 		}
 	}
 }
 
-func Accept(value string) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Set(util.HeaderAccept, value)
-			return next(req, resp)
+func Accept(value string) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Set(util.HeaderAccept, value)
+			return next(response, request)
 		}
 	}
 }
 
-func UserAgent(value string) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Set(util.HeaderUserAgent, value)
-			return next(req, resp)
+func UserAgent(value string) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Set(util.HeaderUserAgent, value)
+			return next(response, request)
 		}
 	}
 }
 
-func Referer(value string) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Set(util.HeaderReferer, value)
-			return next(req, resp)
+func Referer(value string) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Set(util.HeaderReferer, value)
+			return next(response, request)
 		}
 	}
 }
 
-func Origin(value string) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Set(util.HeaderOrigin, value)
-			return next(req, resp)
+func Origin(value string) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Set(util.HeaderOrigin, value)
+			return next(response, request)
 		}
 	}
 }
 
 // Add adds the key, value pair to the header.
 // It appends to any existing values associated with key.
-func Add(key, value string) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Add(key, value)
-			return next(req, resp)
+func Add(key, value string) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Add(key, value)
+			return next(response, request)
 		}
 	}
 }
 
 // Set sets the header entries associated with key to the single element value.
 // It replaces any existing values associated with key.
-func Set(key, value string) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Set(key, value)
-			return next(req, resp)
+func Set(key, value string) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Set(key, value)
+			return next(response, request)
 		}
 	}
 }
 
 // SetMap sets a map of headers represented by key-value pair.
-func SetMap(headers map[string]string) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
+func SetMap(headers map[string]string) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
 			for k, v := range headers {
-				req.Request.Header.Set(k, v)
+				request.Header.Set(k, v)
 			}
-			return next(req, resp)
+			return next(response, request)
 		}
 	}
 }
 
 // Del deletes the header fields associated with key.
-func Del(key string) goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header.Del(key)
-			return next(req, resp)
+func Del(key string) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header.Del(key)
+			return next(response, request)
 		}
 	}
 }
 
 // Del deletes all headers
-func DelAll() goreq.CallWrapper {
-	return func(next goreq.CallFunc) goreq.CallFunc {
-		return func(req *goreq.Req, resp *goreq.Resp) error {
-			req.Request.Header = make(http.Header)
-			return next(req, resp)
+func DelAll() wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			request.Header = make(http.Header)
+			return next(response, request)
 		}
 	}
 }
