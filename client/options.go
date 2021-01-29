@@ -83,10 +83,3 @@ func WithProxyURL(proxyURL string) Option {
 		options.Proxy = http.ProxyURL(u)
 	}
 }
-
-// TODO
-//func WithPrometheus() Option {
-//	return func(options *Options) {
-//		//http.Handle("/metrics", promhttp.Handler())
-//	}
-//}
