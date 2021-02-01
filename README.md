@@ -11,7 +11,7 @@
   提供可复用的通用逻辑封装，主要是两个方面：
 
   - httpclient的配置，如cookie，tls，超时，代理，body的编解码方式等
-  - 插件机制实现在请求前后对request和response做二次处理，比如请求前携带auth，熔断，打印调用日志，设置api基础路径等，支持自定义插件开发。
+  - 通用逻辑封装，插件机制实现在请求前后对request和response做二次处理，比如认证，熔断，打印调用日志，设置api基础路径等，支持自定义插件开发。
 
 - Req
 
@@ -19,7 +19,7 @@
 
 - Resp
 
-  response的封装，提供各种方便的获取响应内容的方法
+  response的封装，提供各种方便的获取响应内容的方法。
 
 
 
@@ -43,6 +43,8 @@
 go get -u github.com/aiscrm/goreq
 ```
 
+
+
 ## 例子
 
 ### 简单例子
@@ -53,6 +55,5 @@ goreq.Get(ts.URL).Use(log.Dump()).Do().AsString()
 
 ## TODO
 
-- [ ] opentracing
 - [ ] prometheus
 
