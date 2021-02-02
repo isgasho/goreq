@@ -9,7 +9,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 )
 
-func Tracing() wrapper.CallWrapper {
+func Trace() wrapper.CallWrapper {
 	return func(next wrapper.CallFunc) wrapper.CallFunc {
 		return func(response *http.Response, request *http.Request) error {
 			span, _ := opentracing.StartSpanFromContext(request.Context(), "goreq")
