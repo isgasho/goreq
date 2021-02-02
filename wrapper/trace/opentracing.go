@@ -19,9 +19,9 @@ func Trace() wrapper.CallWrapper {
 				span.LogFields(opentracinglog.Error(err))
 				span.SetTag("error", true)
 			}
-			span.LogFields(opentracinglog.String("host", request.Host))
-			span.LogFields(opentracinglog.String("url", request.RequestURI))
-			span.LogFields(opentracinglog.String("status", response.Status))
+			span.LogFields(opentracinglog.String("req.host", request.URL.Host))
+			span.LogFields(opentracinglog.String("req.url", request.URL.Path))
+			span.LogFields(opentracinglog.String("resp.status", response.Status))
 			return err
 		}
 	}

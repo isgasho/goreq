@@ -9,7 +9,7 @@ replace (
 )
 
 require (
-	github.com/aiscrm/goreq v0.0.0-00010101000000-000000000000
+	github.com/aiscrm/goreq v0.1.12
 	github.com/aiscrm/goreq/vo v0.0.0-00010101000000-000000000000
 	github.com/aiscrm/goreq/wrapper/breaker/hystrix v0.0.0-00010101000000-000000000000
 )
