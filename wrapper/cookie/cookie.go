@@ -18,6 +18,18 @@ func Add(cookie *http.Cookie) wrapper.CallWrapper {
 	}
 }
 
+// AddCookies add multi cookies.
+func AddCookies(cookies []*http.Cookie) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			for _, cookie := range cookies {
+				request.AddCookie(cookie)
+			}
+			return next(response, request)
+		}
+	}
+}
+
 // DelAll deletes all the cookies by deleting the Cookie header field.
 func DelAll() wrapper.CallWrapper {
 	return func(next wrapper.CallFunc) wrapper.CallFunc {
