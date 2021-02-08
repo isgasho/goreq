@@ -76,6 +76,20 @@ func Set(key, value string) wrapper.CallWrapper {
 }
 
 // SetMap sets a map of headers represented by key-value pair.
+func SetHeader(header http.Header) wrapper.CallWrapper {
+	return func(next wrapper.CallFunc) wrapper.CallFunc {
+		return func(response *http.Response, request *http.Request) error {
+			for k, v := range header {
+				for _, vv := range v {
+					request.Header.Set(k, vv)
+				}
+			}
+			return next(response, request)
+		}
+	}
+}
+
+// SetMap sets a map of headers represented by key-value pair.
 func SetMap(headers map[string]string) wrapper.CallWrapper {
 	return func(next wrapper.CallFunc) wrapper.CallFunc {
 		return func(response *http.Response, request *http.Request) error {
