@@ -2,7 +2,6 @@ package prometheus
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/aiscrm/goreq/wrapper"
 	"github.com/prometheus/client_golang/prometheus"
@@ -89,7 +88,7 @@ func Prometheus(opts ...Option) wrapper.CallWrapper {
 				summary.WithLabelValues(request.RequestURI).Observe(us)
 			}))
 			err := next(response, request)
-			counter.WithLabelValues(request.Host, request.RequestURI, strconv.Itoa(response.StatusCode)).Inc()
+			counter.WithLabelValues(request.URL.Host, request.URL.Path, response.Status).Inc()
 			timer.ObserveDuration()
 			return err
 		}
