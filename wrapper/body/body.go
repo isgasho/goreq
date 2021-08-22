@@ -103,7 +103,7 @@ func Body(body interface{}) wrapper.CallWrapper {
 	}
 }
 
-// Body with body
+// Binary with bytes body
 func Binary(body []byte) wrapper.CallWrapper {
 	return Reader(bytes.NewReader(body))
 }

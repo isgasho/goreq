@@ -7,7 +7,10 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/aiscrm/goreq/wrapper/header"
+
 	"github.com/aiscrm/goreq/wrapper"
+	wContext "github.com/aiscrm/goreq/wrapper/context"
 )
 
 // Req represents a http request
@@ -69,6 +72,14 @@ func (r *Req) WithMethod(method string) *Req {
 	return r
 }
 
+func (r *Req) WithContext(ctx context.Context) *Req {
+	return r.Use(wContext.Context(ctx))
+}
+
+func (r *Req) WithHeader(key, value string) *Req {
+	return r.Use(header.Set(key, value))
+}
+
 // GetBody return request body
 func (r *Req) GetBody() []byte {
 	if r.Request.Body == nil {
@@ -82,12 +93,12 @@ func (r *Req) GetBody() []byte {
 	return body
 }
 
-// GetURL return request context
+// GetContext return request context
 func (r *Req) GetContext() context.Context {
 	return r.Request.Context()
 }
 
-// GetURL return client
+// GetClient return client
 func (r *Req) GetClient() Client {
 	return r.client
 }

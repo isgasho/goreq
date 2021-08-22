@@ -8,7 +8,7 @@ import (
 )
 
 // JSONValue is a raw encoded JSON value.
-// It implements Marshaler and Unmarshaler and can
+// It implements Marshaller and Unmarshaler and can
 // be used to delay JSON decoding or precompute a JSON encoding.
 type JSONValue []byte
 
