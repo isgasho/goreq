@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	stdjson "encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +11,8 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/aiscrm/goreq/wrapper/trace"
 
 	"github.com/aiscrm/goreq/wrapper/breaker"
 
@@ -52,7 +55,7 @@ func TestReq_AddQueryParams(t *testing.T) {
 	}
 	ts := httptest.NewServer(http.HandlerFunc(getHandler))
 
-	data, err := goreq.NewClient().Use(log.Dump()).Post(ts.URL).
+	data, err := goreq.NewClient().Use(log.Dump()).Post(ts.URL).WithContext(context.TODO()).
 		Use(
 			url.Path("/hello"),
 			query.SetMap(map[string]interface{}{
@@ -65,6 +68,7 @@ func TestReq_AddQueryParams(t *testing.T) {
 			multipart.FileBytes("media", "1", []byte(`你好，world`)),
 			form.Set("title", "ThisIsTitle"),
 			multipart.FileBytes("image", "2", []byte(`你好，图片`)),
+			trace.Trace(),
 			//log.Dump(),
 		).Do().AsString()
 	if err != nil {

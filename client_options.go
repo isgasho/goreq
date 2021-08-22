@@ -1,4 +1,4 @@
-package client
+package goreq
 
 import (
 	"crypto/tls"
@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type Options struct {
+type ClientOptions struct {
 	EnableCookie          bool
 	Timeout               time.Duration
 	DialTimeout           time.Duration
@@ -22,17 +22,17 @@ type Options struct {
 	Errors                []error
 }
 
-type Option func(options *Options)
+type ClientOption func(options *ClientOptions)
 
-func WithTransport(transport http.RoundTripper) Option {
-	return func(options *Options) {
+func WithTransport(transport http.RoundTripper) ClientOption {
+	return func(options *ClientOptions) {
 		options.Transport = transport
 	}
 }
 
 // EnableInsecureTLS allows insecure https
-func EnableInsecureTLS(enable bool) Option {
-	return func(options *Options) {
+func EnableInsecureTLS(enable bool) ClientOption {
+	return func(options *ClientOptions) {
 		if options.TLSClientConfig == nil {
 			options.TLSClientConfig = &tls.Config{}
 		}
@@ -41,20 +41,20 @@ func EnableInsecureTLS(enable bool) Option {
 }
 
 // EnableCookie enable or disable cookie manager
-func EnableCookie(enable bool) Option {
-	return func(options *Options) {
+func EnableCookie(enable bool) ClientOption {
+	return func(options *ClientOptions) {
 		options.EnableCookie = enable
 	}
 }
 
-func WithTimeout(timeout time.Duration) Option {
-	return func(options *Options) {
+func WithTimeout(timeout time.Duration) ClientOption {
+	return func(options *ClientOptions) {
 		options.Timeout = timeout
 	}
 }
 
-func WithTLSCert(certPEMBlock, keyPEMBlock []byte) Option {
-	return func(options *Options) {
+func WithTLSCert(certPEMBlock, keyPEMBlock []byte) ClientOption {
+	return func(options *ClientOptions) {
 		cert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
 		if err != nil {
 			options.Errors = append(options.Errors, err)
@@ -67,14 +67,14 @@ func WithTLSCert(certPEMBlock, keyPEMBlock []byte) Option {
 	}
 }
 
-func WithProxy(proxy func(*http.Request) (*url.URL, error)) Option {
-	return func(options *Options) {
+func WithProxy(proxy func(*http.Request) (*url.URL, error)) ClientOption {
+	return func(options *ClientOptions) {
 		options.Proxy = proxy
 	}
 }
 
-func WithProxyURL(proxyURL string) Option {
-	return func(options *Options) {
+func WithProxyURL(proxyURL string) ClientOption {
+	return func(options *ClientOptions) {
 		u, err := url.Parse(proxyURL)
 		if err != nil {
 			options.Errors = append(options.Errors, err)

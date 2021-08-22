@@ -6,7 +6,7 @@ import "net/http"
 
 type CallFunc func(*http.Response, *http.Request) error
 
-// A constructor for a piece of middleware.
+// CallWrapper A constructor for a piece of middleware.
 // Some middleware use this constructor out of the box,
 // so in most cases you can just pass somepackage.New
 type CallWrapper func(CallFunc) CallFunc

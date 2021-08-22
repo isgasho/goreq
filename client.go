@@ -15,8 +15,6 @@ import (
 	"github.com/aiscrm/goreq/wrapper"
 
 	"github.com/aiscrm/goreq/util"
-
-	"github.com/aiscrm/goreq/client"
 )
 
 var (
@@ -27,18 +25,18 @@ var (
 //type HandlerChain []HandlerFunc
 
 type Client interface {
-	Init(...client.Option) error
-	Options() client.Options
+	Init(...ClientOption) error
+	Options() ClientOptions
 	Use(...wrapper.CallWrapper) Client
-	Do(*Req, ...client.Option) *Resp
+	Do(*Req, ...ClientOption) *Resp
 	New() *Req
 	Get(rawURL string) *Req
 	Post(rawURL string) *Req
 }
 
-func NewClient(opts ...client.Option) Client {
+func NewClient(opts ...ClientOption) Client {
 	// default options
-	options := client.Options{
+	options := ClientOptions{
 		EnableCookie:          true,
 		Timeout:               0,
 		DialTimeout:           30 * time.Second,
@@ -52,23 +50,23 @@ func NewClient(opts ...client.Option) Client {
 		Proxy:                 nil,
 		Errors:                []error{},
 	}
-	c := &cli{
+	c := &client{
 		opts: options,
 	}
-	c.Init(opts...)
+	_ = c.Init(opts...)
 
 	return c
 }
 
-type cli struct {
-	opts       client.Options
+type client struct {
+	opts       ClientOptions
 	httpClient *http.Client
 	wrappers   []wrapper.CallWrapper
 	//handler    CallFunc
 	pool sync.Pool
 }
 
-func (c *cli) Init(opts ...client.Option) error {
+func (c *client) Init(opts ...ClientOption) error {
 	for _, o := range opts {
 		o(&c.opts)
 	}
@@ -77,11 +75,11 @@ func (c *cli) Init(opts ...client.Option) error {
 	return nil
 }
 
-func (c *cli) Options() client.Options {
+func (c *client) Options() ClientOptions {
 	return c.opts
 }
 
-func (c *cli) Use(wrappers ...wrapper.CallWrapper) Client {
+func (c *client) Use(wrappers ...wrapper.CallWrapper) Client {
 	c.wrappers = append(c.wrappers, wrappers...)
 	return c
 	//nc := &client{
@@ -94,7 +92,7 @@ func (c *cli) Use(wrappers ...wrapper.CallWrapper) Client {
 	//return nc
 }
 
-func (c *cli) Do(req *Req, opts ...client.Option) *Resp {
+func (c *client) Do(req *Req, opts ...ClientOption) *Resp {
 	for _, o := range opts {
 		o(&c.opts)
 	}
@@ -131,19 +129,19 @@ func (c *cli) Do(req *Req, opts ...client.Option) *Resp {
 	return resp
 }
 
-func (c *cli) New() *Req {
+func (c *client) New() *Req {
 	return New().WithClient(c)
 }
 
-func (c *cli) Get(rawURL string) *Req {
+func (c *client) Get(rawURL string) *Req {
 	return Get(rawURL).WithClient(c)
 }
 
-func (c *cli) Post(rawURL string) *Req {
+func (c *client) Post(rawURL string) *Req {
 	return Post(rawURL).WithClient(c)
 }
 
-func (c *cli) do(response *http.Response, request *http.Request) error {
+func (c *client) do(response *http.Response, request *http.Request) error {
 	var err error
 	var reqBody []byte
 	if request.Body != nil {
@@ -163,7 +161,7 @@ func (c *cli) do(response *http.Response, request *http.Request) error {
 	return nil
 }
 
-func newHttpClient(options client.Options) *http.Client {
+func newHttpClient(options ClientOptions) *http.Client {
 	jar, _ := cookiejar.New(nil)
 	if !options.EnableCookie {
 		jar = nil

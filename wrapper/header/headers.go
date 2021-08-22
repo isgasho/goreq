@@ -75,7 +75,7 @@ func Set(key, value string) wrapper.CallWrapper {
 	}
 }
 
-// SetMap sets a map of headers represented by key-value pair.
+// SetHeader sets a map of headers represented by key-value pair.
 func SetHeader(header http.Header) wrapper.CallWrapper {
 	return func(next wrapper.CallFunc) wrapper.CallFunc {
 		return func(response *http.Response, request *http.Request) error {
@@ -111,7 +111,7 @@ func Del(key string) wrapper.CallWrapper {
 	}
 }
 
-// Del deletes all headers
+// DelAll deletes all headers
 func DelAll() wrapper.CallWrapper {
 	return func(next wrapper.CallFunc) wrapper.CallFunc {
 		return func(response *http.Response, request *http.Request) error {
